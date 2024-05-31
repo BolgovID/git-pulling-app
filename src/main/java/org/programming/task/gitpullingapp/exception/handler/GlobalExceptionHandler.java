@@ -1,6 +1,7 @@
 package org.programming.task.gitpullingapp.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.programming.task.gitpullingapp.exception.ApiRateLimitExceededException;
 import org.programming.task.gitpullingapp.exception.ErrorMessage;
 import org.programming.task.gitpullingapp.exception.GitUserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -19,5 +20,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 errorMessage,
                 HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ApiRateLimitExceededException.class)
+    public ResponseEntity<ErrorMessage> handleApiRateExceedException(ApiRateLimitExceededException ex) {
+        log.debug(ex.getMessage());
+        var errorMessage = new ErrorMessage(403, ex.getMessage());
+        return new ResponseEntity<>(
+                errorMessage,
+                HttpStatus.valueOf(403));
     }
 }

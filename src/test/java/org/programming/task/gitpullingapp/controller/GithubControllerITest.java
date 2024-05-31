@@ -10,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -28,12 +28,12 @@ class GithubControllerITest {
 
     @Test
     void shouldReturnOneUserRepository_whenUserExist() {
-        var branchesDto = List.of(new BranchDto("master", "master-sha1"));
-        var userRepositoryDto = new UserRepositoryDto("repo1", "owner", branchesDto);
-        var repositoryDto = List.of(userRepositoryDto);
+        var branchesDtoList = List.of(new BranchDto("master", "master-sha1"));
+        var userRepositoryDto = new UserRepositoryDto("repo1", "owner", branchesDtoList);
+        var repositoryDtoList = List.of(userRepositoryDto);
 
         when(githubService.getUserNotForkedRepositories("username"))
-                .thenReturn(Mono.just(repositoryDto));
+                .thenReturn(Flux.fromIterable(repositoryDtoList));
 
         testClient.get().uri("/api/github/username/repositories")
                 .accept(MediaType.APPLICATION_JSON)
@@ -45,7 +45,7 @@ class GithubControllerITest {
     @Test
     void shouldThrowGitUserNotFoundException_whenUserNotExist() {
         when(githubService.getUserNotForkedRepositories("unknownUser"))
-                .thenReturn(Mono.error(new GitUserNotFoundException("unknownUser")));
+                .thenReturn(Flux.error(new GitUserNotFoundException("unknownUser")));
 
         testClient.get()
                 .uri("/github/unknownUser/repositories")

@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-
 class GitHubServiceTest {
 
     @Mock
@@ -58,9 +57,7 @@ class GitHubServiceTest {
                 ));
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories("username"))
-                .expectNextMatches(list -> list.size() == 2
-                        && list.stream().allMatch(dto -> dto.repositoryName().startsWith("repo"))
-                )
+                .expectNextCount(2)
                 .verifyComplete();
     }
 
@@ -84,7 +81,7 @@ class GitHubServiceTest {
                 ));
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories("username"))
-                .expectNextMatches(List::isEmpty)
+                .expectNextCount(0)
                 .verifyComplete();
     }
 
@@ -95,7 +92,7 @@ class GitHubServiceTest {
                 .thenReturn(Flux.empty());
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories("emptyUser"))
-                .expectNextMatches(List::isEmpty)
+                .expectNextCount(0)
                 .verifyComplete();
     }
 

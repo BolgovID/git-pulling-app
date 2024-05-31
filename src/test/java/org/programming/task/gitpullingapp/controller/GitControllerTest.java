@@ -8,8 +8,7 @@ import org.mockito.MockitoAnnotations;
 import org.programming.task.gitpullingapp.controller.dto.UserRepositoryDto;
 import org.programming.task.gitpullingapp.exception.GitUserNotFoundException;
 import org.programming.task.gitpullingapp.service.GitHubService;
-import org.springframework.http.ResponseEntity;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.List;
@@ -32,12 +31,13 @@ class GitControllerTest {
     @Test
     void shouldReturnListOfUser_whenUserExist() {
         var username = "user";
-        var repositories = List.of(new UserRepositoryDto("repo", "user", List.of()));
+        var userRepository = new UserRepositoryDto("repo", "user", List.of());
+        var repositories = List.of(userRepository);
 
-        when(gitHubService.getUserNotForkedRepositories(username)).thenReturn(Mono.just(repositories));
+        when(gitHubService.getUserNotForkedRepositories(username)).thenReturn(Flux.fromIterable((repositories)));
 
         StepVerifier.create(gitController.getUserRepositories(username))
-                .expectNext(ResponseEntity.ok(repositories))
+                .expectNext(userRepository)
                 .verifyComplete();
     }
 
@@ -45,7 +45,7 @@ class GitControllerTest {
     void shouldThrowGitUserNotFoundException_whenUserNotExist() {
         var username = "nonExistentUser";
         when(gitHubService.getUserNotForkedRepositories(username))
-                .thenReturn(Mono.error(new GitUserNotFoundException("nonExistentUser")));
+                .thenReturn(Flux.error(new GitUserNotFoundException("nonExistentUser")));
 
         StepVerifier.create(gitController.getUserRepositories(username))
                 .expectErrorMatches(GitUserNotFoundException.class::isInstance)
@@ -56,10 +56,10 @@ class GitControllerTest {
     void shouldReturnEmptyRepositoryList_whenUserDoesntHaveAnyRepositories() {
         var username = "user";
         when(gitHubService.getUserNotForkedRepositories(username))
-                .thenReturn(Mono.just(List.of()));
+                .thenReturn(Flux.empty());
 
         StepVerifier.create(gitController.getUserRepositories(username))
-                .expectNext(ResponseEntity.ok(List.of()))
+                .expectNextCount(0)
                 .verifyComplete();
     }
 }
