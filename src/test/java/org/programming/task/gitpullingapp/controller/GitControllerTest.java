@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.programming.task.gitpullingapp.controller.dto.UserRepositoryDto;
 import org.programming.task.gitpullingapp.exception.GitUserNotFoundException;
-import org.programming.task.gitpullingapp.service.GitHubService;
+import org.programming.task.gitpullingapp.service.impl.GitHubServiceImpl;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class GitControllerTest {
 
     @Mock
-    private GitHubService gitHubService;
+    private GitHubServiceImpl gitHubService;
 
     @InjectMocks
     private GitController gitController;

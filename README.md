@@ -43,11 +43,14 @@ error responses are returned for unsupported media types and non-existent users.
 You can configure the application by editing the application.yaml file located in the `src/main/resources`
 directory.
 
+Important: Generate Git API Token and paste it to env variables
+
    ```yaml
-   app:
-     github:
-       api:
+    app:
+      github:
          url: https://api.github.com
+         token: ${GIT_API_TOKEN}
+         version: 2022-11-28
    ```
 
 ### Running the Application

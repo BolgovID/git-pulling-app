@@ -11,5 +11,6 @@ springdoc:
 
 app:
   github:
-    api:
-      url: https://api.github.com
+    url: https://api.github.com
+    token: ${GIT_API_TOKEN}
+    version: 2022-11-28

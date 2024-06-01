@@ -1,0 +1,5 @@
+app:
+  github:
+    url: http://localhost:8181
+    token: test
+    version: 2022-11-28

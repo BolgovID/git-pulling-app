@@ -10,11 +10,12 @@ import org.programming.task.gitpullingapp.controller.dto.UserRepositoryDto;
 import org.programming.task.gitpullingapp.exception.ApiRateLimitExceededException;
 import org.programming.task.gitpullingapp.exception.GitUserNotFoundException;
 import org.programming.task.gitpullingapp.mapper.GitHubMapperImpl;
-import org.programming.task.gitpullingapp.outgoing.GitApiCallService;
+import org.programming.task.gitpullingapp.outgoing.GitHubApiService;
 import org.programming.task.gitpullingapp.outgoing.dto.BranchApiResponse;
 import org.programming.task.gitpullingapp.outgoing.dto.CommitApiResponse;
 import org.programming.task.gitpullingapp.outgoing.dto.OwnerApiResponse;
 import org.programming.task.gitpullingapp.outgoing.dto.RepositoryApiResponse;
+import org.programming.task.gitpullingapp.service.impl.GitHubServiceImpl;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -24,16 +25,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-class GitHubServiceTest {
+class GitHubServiceImplTest {
 
     @Mock
-    private GitApiCallService gitApiCallService;
+    private GitHubApiService gitHubApiService;
 
     @Mock
     private GitHubMapperImpl gitHubMapper;
 
     @InjectMocks
-    private GitHubService gitHubService;
+    private GitHubServiceImpl gitHubService;
 
     @BeforeEach
     void setUp() {
@@ -45,9 +46,9 @@ class GitHubServiceTest {
         var username = "username";
         var repositories = generateRepositoryApiResponseList();
 
-        when(gitApiCallService.pullUserRepositories(username))
+        when(gitHubApiService.pullUserRepositories(username))
                 .thenReturn(Flux.fromIterable(repositories));
-        when(gitApiCallService.pullBranches(anyString(), anyString()))
+        when(gitHubApiService.pullBranches(anyString(), anyString()))
                 .thenReturn(Flux.empty());
         when(gitHubMapper.toBranchDto(any()))
                 .thenReturn(new BranchDto("master", "sha1"));
@@ -70,7 +71,7 @@ class GitHubServiceTest {
         var branchApiResponse = new BranchApiResponse("master", new CommitApiResponse("sha123"));
         var branchDto = new BranchDto("master", "sha123");
 
-        when(gitApiCallService.pullBranches(username, repository))
+        when(gitHubApiService.pullBranches(username, repository))
                 .thenReturn(Flux.just(branchApiResponse));
         when(gitHubMapper.toBranchDto(branchApiResponse))
                 .thenReturn(branchDto);
@@ -85,7 +86,7 @@ class GitHubServiceTest {
         var username = "username";
         var repository = "repository";
 
-        when(gitApiCallService.pullBranches(username, repository))
+        when(gitHubApiService.pullBranches(username, repository))
                 .thenReturn(Flux.empty());
 
         StepVerifier.create(gitHubService.getAllRepositoryBranches(username, repository))
@@ -98,7 +99,7 @@ class GitHubServiceTest {
         var invalidUsername = "username";
         var invalidRepository = "repository";
 
-        when(gitApiCallService.pullBranches(invalidUsername, invalidRepository))
+        when(gitHubApiService.pullBranches(invalidUsername, invalidRepository))
                 .thenReturn(Flux.error(new GitUserNotFoundException(invalidUsername)));
 
         StepVerifier.create(gitHubService.getAllRepositoryBranches(invalidUsername, invalidRepository))
@@ -111,7 +112,7 @@ class GitHubServiceTest {
         var username = "username";
         var repository = "repository";
 
-        when(gitApiCallService.pullBranches(username, repository))
+        when(gitHubApiService.pullBranches(username, repository))
                 .thenReturn(Flux.error(ApiRateLimitExceededException::new));
 
         StepVerifier.create(gitHubService.getAllRepositoryBranches(username, repository))
@@ -124,10 +125,10 @@ class GitHubServiceTest {
         var username = "username";
         var repositories = generateForkRepositoryApiResponseList();
 
-        when(gitApiCallService.pullUserRepositories(username))
+        when(gitHubApiService.pullUserRepositories(username))
                 .thenReturn(Flux.fromIterable(repositories));
 
-        when(gitApiCallService.pullBranches(anyString(), anyString()))
+        when(gitHubApiService.pullBranches(anyString(), anyString()))
                 .thenReturn(Flux.empty());
 
         when(gitHubMapper.toBranchDto(any()))
@@ -149,7 +150,7 @@ class GitHubServiceTest {
     void shouldReturnEmptyList_whenUserDontHasAnyRepository() {
         var username = "username";
 
-        when(gitApiCallService.pullUserRepositories(username))
+        when(gitHubApiService.pullUserRepositories(username))
                 .thenReturn(Flux.empty());
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories(username))
@@ -161,7 +162,7 @@ class GitHubServiceTest {
     void shouldThrowException_whenUserNotExist() {
         var username = "username";
 
-        when(gitApiCallService.pullUserRepositories(username))
+        when(gitHubApiService.pullUserRepositories(username))
                 .thenReturn(Flux.error(new GitUserNotFoundException(username)));
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories(username))

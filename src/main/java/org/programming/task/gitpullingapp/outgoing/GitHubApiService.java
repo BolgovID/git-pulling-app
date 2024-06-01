@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class GitApiCallService {
+public class GitHubApiService {
     public static final Integer NOT_FOUND_ERROR_CODE = 404;
     public static final Integer API_RATE_LIMIT_EXCEEDED_ERROR_CODE = 403;
 
