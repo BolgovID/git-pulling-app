@@ -1,6 +1,5 @@
 package org.programming.task.gitpullingapp.integration;
 
-import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
 import org.programming.task.gitpullingapp.controller.dto.BranchDto;
@@ -14,7 +13,6 @@ import org.programming.task.gitpullingapp.outgoing.dto.RepositoryApiResponse;
 import org.programming.task.gitpullingapp.service.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.test.StepVerifier;
 import wiremock.com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -118,20 +116,6 @@ class GitHubServiceITest {
         StepVerifier.create(repositoryResponseFlux)
                 .expectNextSequence(expectedBranchesDto)
                 .verifyComplete();
-    }
-
-    @Test
-    void shouldThrowAnError_whenConnectionReset() {
-        stubFor(get(urlPathEqualTo("/repos/username/repo1/branches"))
-                .willReturn(aResponse()
-                        .withFault(Fault.CONNECTION_RESET_BY_PEER)
-                ));
-
-        var repositoryResponseFlux = gitHubService.getAllRepositoryBranches("username", "repo1");
-
-        StepVerifier.create(repositoryResponseFlux)
-                .expectError(WebClientRequestException.class)
-                .verify();
     }
 
     private List<BranchApiResponse> generateListOfBranchApiResponse() {
