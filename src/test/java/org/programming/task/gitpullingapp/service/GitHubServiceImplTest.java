@@ -21,6 +21,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -45,6 +46,7 @@ class GitHubServiceImplTest {
     void shouldReturnOnlyNotForkedRepository() {
         var username = "username";
         var repositories = generateRepositoryApiResponseList();
+        var expectedRepositories = generateListOfNotForkedUserRepositoryDto();
 
         when(gitHubApiService.pullUserRepositories(username))
                 .thenReturn(Flux.fromIterable(repositories));
@@ -60,7 +62,7 @@ class GitHubServiceImplTest {
                 ));
 
         StepVerifier.create(gitHubService.getUserNotForkedRepositories(username))
-                .expectNextCount(2)
+                .expectNextSequence(expectedRepositories)
                 .verifyComplete();
     }
 
@@ -186,5 +188,12 @@ class GitHubServiceImplTest {
                 new RepositoryApiResponse("fork3", new OwnerApiResponse("owner1"), true),
                 new RepositoryApiResponse("fork4", new OwnerApiResponse("owner1"), true)
         );
+    }
+
+    private List<UserRepositoryDto> generateListOfNotForkedUserRepositoryDto() {
+        var repository1 = new UserRepositoryDto("repo1", "owner1", emptyList());
+        var repository2 = new UserRepositoryDto("repo2", "owner1", emptyList());
+
+        return List.of(repository1, repository2);
     }
 }

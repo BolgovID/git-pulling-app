@@ -3,6 +3,7 @@ package org.programming.task.gitpullingapp.integration;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
 import org.programming.task.gitpullingapp.controller.dto.BranchDto;
+import org.programming.task.gitpullingapp.controller.dto.UserRepositoryDto;
 import org.programming.task.gitpullingapp.exception.ApiRateLimitExceededException;
 import org.programming.task.gitpullingapp.exception.GitUserNotFoundException;
 import org.programming.task.gitpullingapp.outgoing.GitHubApiService;
@@ -38,6 +39,8 @@ class GitHubServiceITest {
         var branches = generateListOfBranchApiResponse();
         var branchJsonApiResponse = objectMapper.valueToTree(branches);
 
+        var expectedRepositories = generateListOfNotForkedUserRepositoryDto();
+
         stubFor(get(urlPathMatching("/users/?[a-zA-Z0-9]*/repos"))
                 .willReturn(ok()
                         .withHeader("Content-Type", "application/json")
@@ -51,8 +54,9 @@ class GitHubServiceITest {
                 ));
 
         var repositoryResponseFlux = gitHubService.getUserNotForkedRepositories("username");
+
         StepVerifier.create(repositoryResponseFlux)
-                .expectNextCount(2)
+                .expectNextSequence(expectedRepositories)
                 .verifyComplete();
     }
 
@@ -139,5 +143,12 @@ class GitHubServiceITest {
         var repository4 = new RepositoryApiResponse("fork2", owner, true);
 
         return List.of(repository1, repository2, repository3, repository4);
+    }
+
+    private List<UserRepositoryDto> generateListOfNotForkedUserRepositoryDto() {
+        var repository1 = new UserRepositoryDto("repo1", "username", generateListOfBranchDto());
+        var repository2 = new UserRepositoryDto("repo2", "username", generateListOfBranchDto());
+
+        return List.of(repository1, repository2);
     }
 }
